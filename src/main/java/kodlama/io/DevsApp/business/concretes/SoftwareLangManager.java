@@ -1,67 +1,78 @@
 package kodlama.io.DevsApp.business.concretes;
 
 import kodlama.io.DevsApp.business.abstracts.SoftwareLangService;
+import kodlama.io.DevsApp.common.MessageConstant;
 import kodlama.io.DevsApp.dataAccess.abstracts.SoftwareLangRepository;
+import kodlama.io.DevsApp.dataAccess.dtos.SoftwareLangDTO;
+import kodlama.io.DevsApp.dataAccess.dtos.SoftwareLangWithSoftwareTechnologyDTO;
 import kodlama.io.DevsApp.entities.concretes.SoftwareLang;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SoftwareLangManager implements SoftwareLangService {
     @Inject
-    SoftwareLangRepository langRepository;
+    private SoftwareLangRepository langRepository;
+
+    @Inject
+    private ModelMapper modelMapper;
 
     @Override
-    public List<SoftwareLang> getAll() {
-        return langRepository.getAll();
+    public List<SoftwareLangDTO> getAllLanguage() {
+        return langRepository.findAll().stream().map(language -> modelMapper.map(language, SoftwareLangDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public SoftwareLang save(SoftwareLang lang) throws Exception {
-        isSoftwareLangIDExist(lang);
-        isSoftwareLangNameExist(lang);
-
-        if (lang.getLangName().isEmpty() || lang.getLangName().isBlank()) {
-            throw new RuntimeException("İsim alanı boş olamaz!");
-        }
-        return langRepository.save(lang);
+    public List<SoftwareLangWithSoftwareTechnologyDTO> getAllLanguageWithTechnology() {
+        return langRepository.findAll().stream().map(language -> modelMapper.map(language, SoftwareLangWithSoftwareTechnologyDTO.class))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public SoftwareLang getById(int id) throws Exception {
-        return langRepository.getById(id);
+    public SoftwareLangDTO getByLanguageID(int id) {
+        return langRepository.findById(id).map(softwareLang -> modelMapper.map(softwareLang, SoftwareLangDTO.class)).orElseThrow(() -> {
+            throw new RuntimeException(String.format(MessageConstant.NOT_FOUND_ID_MESSAGE, id));
+        });
     }
 
     @Override
-    public SoftwareLang update(int id, SoftwareLang lang) throws Exception {
-        isSoftwareLangNameExist(lang);
-        if (lang.getLangName().isEmpty() || lang.getLangName().isBlank()) {
-            throw new RuntimeException("İsim alanı boş olamaz!");
-        }
+    public SoftwareLangDTO saveLanguage(SoftwareLangDTO langDTO) {
+        SoftwareLang language = modelMapper.map(langDTO, SoftwareLang.class);
+        isSoftwareLangNameExist(language);
 
-        int index = getAll().indexOf(getById(id));
-        return langRepository.update(index, lang);
-
+        return modelMapper.map(langRepository.save(language), SoftwareLangDTO.class);
     }
 
     @Override
-    public void delete(int id) throws Exception {
-         langRepository.delete(id);
+    public SoftwareLangDTO updateLanguage(int id, SoftwareLangDTO langDTO) {
+        SoftwareLang resultLanguage = langRepository.findById(id).orElseThrow(() -> {
+            throw new RuntimeException(String.format(MessageConstant.NOT_FOUND_ID_MESSAGE, id));
+        });
+
+        isSoftwareLangNameExist(modelMapper.map(langDTO, SoftwareLang.class));
+
+        resultLanguage.setLangName(langDTO.getLangName());
+        return modelMapper.map(langRepository.save(resultLanguage), SoftwareLangDTO.class);
     }
 
-    public void isSoftwareLangIDExist(SoftwareLang lang) {
-        getAll().stream().filter(language -> language.getLangId() == lang.getLangId())
-                .findFirst().ifPresent(language -> {
-                    throw new RuntimeException("ID kullanılmaktadır!");
-                });
+    @Override
+    public void deleteLanguage(int id) {
+        SoftwareLang resultLanguage = langRepository.findById(id).orElseThrow(() -> {
+            throw new RuntimeException(String.format(MessageConstant.NOT_FOUND_ID_MESSAGE, id));
+        });
+
+        langRepository.delete(resultLanguage);
     }
 
     public void isSoftwareLangNameExist(SoftwareLang lang) {
-        getAll().stream().filter(language -> language.getLangName().equalsIgnoreCase(lang.getLangName())).findFirst()
+        getAllLanguage().stream().filter(language -> language.getLangName().equalsIgnoreCase(lang.getLangName())).findFirst()
                 .ifPresent(language -> {
-                    throw new RuntimeException("Isim kullanılmaktadır!");
+                    throw new RuntimeException(String.format(MessageConstant.NAME_EXIST_MESSAGE, lang.getLangName()));
                 });
     }
 }

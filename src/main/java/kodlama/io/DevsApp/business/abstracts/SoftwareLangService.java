@@ -1,13 +1,15 @@
 package kodlama.io.DevsApp.business.abstracts;
 
-import kodlama.io.DevsApp.entities.concretes.SoftwareLang;
+import kodlama.io.DevsApp.dataAccess.dtos.SoftwareLangDTO;
+import kodlama.io.DevsApp.dataAccess.dtos.SoftwareLangWithSoftwareTechnologyDTO;
 
 import java.util.List;
 
 public interface SoftwareLangService {
-    List<SoftwareLang> getAll();
-    SoftwareLang save(SoftwareLang lang) throws Exception;
-    SoftwareLang getById(int id) throws Exception;
-    SoftwareLang update(int id, SoftwareLang lang) throws Exception;
-    void delete(int id) throws Exception;
+    List<SoftwareLangDTO> getAllLanguage();
+    List<SoftwareLangWithSoftwareTechnologyDTO> getAllLanguageWithTechnology();
+    SoftwareLangDTO getByLanguageID(int id);
+    SoftwareLangDTO saveLanguage(SoftwareLangDTO lang);
+    SoftwareLangDTO updateLanguage(int id, SoftwareLangDTO lang);
+    void deleteLanguage(int id);
 }

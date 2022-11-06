@@ -1,7 +1,8 @@
 package kodlama.io.DevsApp.webApi.controllers;
 
 import kodlama.io.DevsApp.business.abstracts.SoftwareLangService;
-import kodlama.io.DevsApp.entities.concretes.SoftwareLang;
+import kodlama.io.DevsApp.dataAccess.dtos.SoftwareLangDTO;
+import kodlama.io.DevsApp.dataAccess.dtos.SoftwareLangWithSoftwareTechnologyDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,38 +15,44 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/languages")
 public class SoftwareLangController {
 
     @Inject
-    SoftwareLangService langService;
+    private SoftwareLangService langService;
 
-    @GetMapping("/languages")
-    public ResponseEntity<List<SoftwareLang> > getAll() {
-        return new ResponseEntity<>(langService.getAll(), HttpStatus.OK);
+    @GetMapping()
+    public ResponseEntity<List<SoftwareLangDTO>> getAll() {
+        return new ResponseEntity<>(langService.getAllLanguage(), HttpStatus.OK);
     }
 
-    @PostMapping("/languages")
-    public ResponseEntity<SoftwareLang> save(@RequestBody SoftwareLang lang) throws Exception {
-        return new ResponseEntity<>(langService.save(lang), HttpStatus.CREATED);
+    @GetMapping("/all")
+    public ResponseEntity<List<SoftwareLangWithSoftwareTechnologyDTO>> getAllLanguageWithTechnology() {
+        return new ResponseEntity<>(langService.getAllLanguageWithTechnology(), HttpStatus.OK);
     }
 
-    @GetMapping("/languages/{id}")
-    public ResponseEntity<SoftwareLang> getById(@PathVariable int id) throws Exception {
-        return new ResponseEntity<>(langService.getById(id),HttpStatus.OK);
+    @PostMapping()
+    public ResponseEntity<SoftwareLangDTO> save(@Valid @RequestBody SoftwareLangDTO lang) {
+        return new ResponseEntity<>(langService.saveLanguage(lang), HttpStatus.CREATED);
     }
 
-    @PutMapping("/languages/{id}")
-    public ResponseEntity<SoftwareLang> update(@PathVariable int id, SoftwareLang lang) throws Exception {
-        return new ResponseEntity<>(langService.update(id, lang), HttpStatus.CREATED);
+    @GetMapping("/{id}")
+    public ResponseEntity<SoftwareLangDTO> getById(@PathVariable int id) {
+        return new ResponseEntity<>(langService.getByLanguageID(id),HttpStatus.OK);
     }
 
-    @DeleteMapping("/languages/{id}")
-    public ResponseEntity<Void> delete(@PathVariable int id) throws Exception {
-        langService.delete(id);
+    @PutMapping("/{id}")
+    public ResponseEntity<SoftwareLangDTO> update(@PathVariable int id, @Valid @RequestBody SoftwareLangDTO lang) {
+        return new ResponseEntity<>(langService.updateLanguage(id, lang), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable int id) {
+        langService.deleteLanguage(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
